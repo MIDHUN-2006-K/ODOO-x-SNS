@@ -62,17 +62,18 @@ model City {
 }
 
 model TripStop {
-  stop_id     String   @id @default(uuid())
-  trip_id     String
-  city_id     String
-  start_date  DateTime @db.Date
-  end_date    DateTime @db.Date
-  order_index Int      @default(0)
-  created_at  DateTime @default(now())
-  updated_at  DateTime @updatedAt
+  stop_id        String   @id @default(uuid())
+  trip_id        String
+  city_id        String?
+  stopping_place String?
+  start_date     DateTime @db.Date
+  end_date       DateTime @db.Date
+  order_index    Int      @default(0)
+  created_at     DateTime @default(now())
+  updated_at     DateTime @updatedAt
 
   trip       Trip        @relation(fields: [trip_id], references: [trip_id], onDelete: Cascade)
-  city       City        @relation(fields: [city_id], references: [city_id])
+  city       City?       @relation(fields: [city_id], references: [city_id])
   activities TripActivity[]
 
   @@index([trip_id])

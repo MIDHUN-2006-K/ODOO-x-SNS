@@ -16,21 +16,25 @@ router.get('/:id/public', async (req, res, next) => {
     const trip = await prisma.trip.findFirst({
       where: {
         trip_id: id,
-        is_public: true
+        is_public: true,
       },
       include: {
-        stops: expand?.includes('stops') ? {
-          include: {
-            city: true,
-            activities: expand?.includes('activities') ? {
+        stops: expand?.includes('stops')
+          ? {
               include: {
-                activity: true
-              }
-            } : false
-          },
-          orderBy: { order_index: 'asc' }
-        } : false
-      }
+                city: true,
+                activities: expand?.includes('activities')
+                  ? {
+                      include: {
+                        activity: true,
+                      },
+                    }
+                  : false,
+              },
+              orderBy: { order_index: 'asc' },
+            }
+          : false,
+      },
     });
 
     if (!trip) {
@@ -46,23 +50,24 @@ router.get('/:id/public', async (req, res, next) => {
       description: trip.description,
       is_public: trip.is_public,
       ...(expand?.includes('stops') && {
-        stops: trip.stops.map(stop => ({
+        stops: trip.stops.map((stop) => ({
           stop_id: stop.stop_id,
           city: stop.city,
+          stopping_place: stop.stopping_place,
           start_date: stop.start_date.toISOString().split('T')[0],
           end_date: stop.end_date.toISOString().split('T')[0],
           order_index: stop.order_index,
           ...(expand?.includes('activities') && {
-            activities: stop.activities.map(ta => ({
+            activities: stop.activities.map((ta) => ({
               trip_activity_id: ta.trip_activity_id,
               activity_id: ta.activity_id,
               name: ta.activity.name,
               scheduled_date: ta.scheduled_date.toISOString().split('T')[0],
-              custom_cost: ta.custom_cost
-            }))
-          })
-        }))
-      })
+              custom_cost: ta.custom_cost,
+            })),
+          }),
+        })),
+      }),
     };
 
     res.json(transformedTrip);
@@ -87,24 +92,28 @@ router.get('/', async (req, res, next) => {
     const trips = await prisma.trip.findMany({
       where,
       include: {
-        stops: expand?.includes('stops') ? {
-          include: {
-            city: true,
-            activities: expand?.includes('activities') ? {
+        stops: expand?.includes('stops')
+          ? {
               include: {
-                activity: true
-              }
-            } : false
-          },
-          orderBy: { order_index: 'asc' }
-        } : false,
-        expenses: expand?.includes('expenses') || false
+                city: true,
+                activities: expand?.includes('activities')
+                  ? {
+                      include: {
+                        activity: true,
+                      },
+                    }
+                  : false,
+              },
+              orderBy: { order_index: 'asc' },
+            }
+          : false,
+        expenses: expand?.includes('expenses') || false,
       },
-      orderBy: { created_at: 'desc' }
+      orderBy: { created_at: 'desc' },
     });
 
     // Transform to match frontend contract
-    const transformedTrips = trips.map(trip => ({
+    const transformedTrips = trips.map((trip) => ({
       trip_id: trip.trip_id,
       trip_name: trip.trip_name,
       start_date: trip.start_date.toISOString().split('T')[0],
@@ -112,30 +121,31 @@ router.get('/', async (req, res, next) => {
       description: trip.description,
       is_public: trip.is_public,
       ...(expand?.includes('stops') && {
-        stops: trip.stops.map(stop => ({
+        stops: trip.stops.map((stop) => ({
           stop_id: stop.stop_id,
           city: stop.city,
+          stopping_place: stop.stopping_place,
           start_date: stop.start_date.toISOString().split('T')[0],
           end_date: stop.end_date.toISOString().split('T')[0],
           order_index: stop.order_index,
           ...(expand?.includes('activities') && {
-            activities: stop.activities.map(ta => ({
+            activities: stop.activities.map((ta) => ({
               trip_activity_id: ta.trip_activity_id,
               activity_id: ta.activity_id,
               name: ta.activity.name,
               scheduled_date: ta.scheduled_date.toISOString().split('T')[0],
-              custom_cost: ta.custom_cost
-            }))
-          })
-        }))
+              custom_cost: ta.custom_cost,
+            })),
+          }),
+        })),
       }),
       ...(expand?.includes('expenses') && {
-        expenses: trip.expenses.map(exp => ({
+        expenses: trip.expenses.map((exp) => ({
           expense_id: exp.expense_id,
           category: exp.category,
-          estimated_cost: exp.estimated_cost
-        }))
-      })
+          estimated_cost: exp.estimated_cost,
+        })),
+      }),
     }));
 
     res.json(transformedTrips);
@@ -153,22 +163,26 @@ router.get('/:id', async (req, res, next) => {
     const trip = await prisma.trip.findFirst({
       where: {
         trip_id: id,
-        user_id: req.user.userId
+        user_id: req.user.userId,
       },
       include: {
-        stops: expand?.includes('stops') ? {
-          include: {
-            city: true,
-            activities: expand?.includes('activities') ? {
+        stops: expand?.includes('stops')
+          ? {
               include: {
-                activity: true
-              }
-            } : false
-          },
-          orderBy: { order_index: 'asc' }
-        } : false,
-        expenses: expand?.includes('expenses') || false
-      }
+                city: true,
+                activities: expand?.includes('activities')
+                  ? {
+                      include: {
+                        activity: true,
+                      },
+                    }
+                  : false,
+              },
+              orderBy: { order_index: 'asc' },
+            }
+          : false,
+        expenses: expand?.includes('expenses') || false,
+      },
     });
 
     if (!trip) {
@@ -184,30 +198,31 @@ router.get('/:id', async (req, res, next) => {
       description: trip.description,
       is_public: trip.is_public,
       ...(expand?.includes('stops') && {
-        stops: trip.stops.map(stop => ({
+        stops: trip.stops.map((stop) => ({
           stop_id: stop.stop_id,
           city: stop.city,
+          stopping_place: stop.stopping_place,
           start_date: stop.start_date.toISOString().split('T')[0],
           end_date: stop.end_date.toISOString().split('T')[0],
           order_index: stop.order_index,
           ...(expand?.includes('activities') && {
-            activities: stop.activities.map(ta => ({
+            activities: stop.activities.map((ta) => ({
               trip_activity_id: ta.trip_activity_id,
               activity_id: ta.activity_id,
               name: ta.activity.name,
               scheduled_date: ta.scheduled_date.toISOString().split('T')[0],
-              custom_cost: ta.custom_cost
-            }))
-          })
-        }))
+              custom_cost: ta.custom_cost,
+            })),
+          }),
+        })),
       }),
       ...(expand?.includes('expenses') && {
-        expenses: trip.expenses.map(exp => ({
+        expenses: trip.expenses.map((exp) => ({
           expense_id: exp.expense_id,
           category: exp.category,
-          estimated_cost: exp.estimated_cost
-        }))
-      })
+          estimated_cost: exp.estimated_cost,
+        })),
+      }),
     };
 
     res.json(transformedTrip);
@@ -227,8 +242,8 @@ router.post('/', validate(schemas.createTrip), async (req, res, next) => {
         start_date: new Date(start_date),
         end_date: new Date(end_date),
         description: description || null,
-        user_id: req.user.userId
-      }
+        user_id: req.user.userId,
+      },
     });
 
     res.status(201).json({
@@ -237,7 +252,7 @@ router.post('/', validate(schemas.createTrip), async (req, res, next) => {
       start_date: trip.start_date.toISOString().split('T')[0],
       end_date: trip.end_date.toISOString().split('T')[0],
       description: trip.description,
-      is_public: trip.is_public
+      is_public: trip.is_public,
     });
   } catch (error) {
     next(error);
@@ -253,8 +268,8 @@ router.patch('/:id', validate(schemas.updateTrip), async (req, res, next) => {
     const existingTrip = await prisma.trip.findFirst({
       where: {
         trip_id: id,
-        user_id: req.user.userId
-      }
+        user_id: req.user.userId,
+      },
     });
 
     if (!existingTrip) {
@@ -270,7 +285,7 @@ router.patch('/:id', validate(schemas.updateTrip), async (req, res, next) => {
 
     const trip = await prisma.trip.update({
       where: { trip_id: id },
-      data: updateData
+      data: updateData,
     });
 
     res.json({
@@ -279,7 +294,7 @@ router.patch('/:id', validate(schemas.updateTrip), async (req, res, next) => {
       start_date: trip.start_date.toISOString().split('T')[0],
       end_date: trip.end_date.toISOString().split('T')[0],
       description: trip.description,
-      is_public: trip.is_public
+      is_public: trip.is_public,
     });
   } catch (error) {
     next(error);
@@ -295,8 +310,8 @@ router.delete('/:id', async (req, res, next) => {
     const trip = await prisma.trip.findFirst({
       where: {
         trip_id: id,
-        user_id: req.user.userId
-      }
+        user_id: req.user.userId,
+      },
     });
 
     if (!trip) {
@@ -304,7 +319,7 @@ router.delete('/:id', async (req, res, next) => {
     }
 
     await prisma.trip.delete({
-      where: { trip_id: id }
+      where: { trip_id: id },
     });
 
     res.status(200).send();
@@ -322,21 +337,21 @@ router.post('/:id/copy', async (req, res, next) => {
     const originalTrip = await prisma.trip.findFirst({
       where: {
         trip_id: id,
-        is_public: true // Can copy public trips
+        is_public: true, // Can copy public trips
       },
       include: {
         stops: {
           include: {
             activities: {
               include: {
-                activity: true
-              }
-            }
+                activity: true,
+              },
+            },
           },
-          orderBy: { order_index: 'asc' }
+          orderBy: { order_index: 'asc' },
         },
-        expenses: true
-      }
+        expenses: true,
+      },
     });
 
     if (!originalTrip) {
@@ -353,36 +368,36 @@ router.post('/:id/copy', async (req, res, next) => {
         user_id: req.user.userId,
         is_public: false,
         stops: {
-          create: originalTrip.stops.map(stop => ({
+          create: originalTrip.stops.map((stop) => ({
             city_id: stop.city_id,
             start_date: stop.start_date,
             end_date: stop.end_date,
             order_index: stop.order_index,
             activities: {
-              create: stop.activities.map(ta => ({
+              create: stop.activities.map((ta) => ({
                 activity_id: ta.activity_id,
                 scheduled_date: ta.scheduled_date,
                 custom_cost: ta.custom_cost,
-                notes: ta.notes
-              }))
-            }
-          }))
+                notes: ta.notes,
+              })),
+            },
+          })),
         },
         expenses: {
-          create: originalTrip.expenses.map(exp => ({
+          create: originalTrip.expenses.map((exp) => ({
             category: exp.category,
             estimated_cost: exp.estimated_cost,
-            description: exp.description
-          }))
-        }
+            description: exp.description,
+          })),
+        },
       },
       include: {
         stops: {
           include: {
-            city: true
-          }
-        }
-      }
+            city: true,
+          },
+        },
+      },
     });
 
     res.status(201).json({
@@ -391,7 +406,7 @@ router.post('/:id/copy', async (req, res, next) => {
       start_date: newTrip.start_date.toISOString().split('T')[0],
       end_date: newTrip.end_date.toISOString().split('T')[0],
       description: newTrip.description,
-      is_public: newTrip.is_public
+      is_public: newTrip.is_public,
     });
   } catch (error) {
     next(error);
@@ -407,16 +422,16 @@ router.get('/:id/summary', async (req, res, next) => {
     const trip = await prisma.trip.findFirst({
       where: {
         trip_id: id,
-        user_id: req.user.userId
+        user_id: req.user.userId,
       },
       include: {
         stops: {
           include: {
-            activities: true
-          }
+            activities: true,
+          },
         },
-        expenses: true
-      }
+        expenses: true,
+      },
     });
 
     if (!trip) {
@@ -428,16 +443,19 @@ router.get('/:id/summary', async (req, res, next) => {
 
     // Calculate activities cost
     const activitiesTotal = trip.stops.reduce((sum, stop) => {
-      return sum + stop.activities.reduce((activitySum, ta) => {
-        return activitySum + (ta.custom_cost || 0);
-      }, 0);
+      return (
+        sum +
+        stop.activities.reduce((activitySum, ta) => {
+          return activitySum + (ta.custom_cost || 0);
+        }, 0)
+      );
     }, 0);
 
     const total_cost = expensesTotal + activitiesTotal;
 
     // Group expenses by category
     const categories = {};
-    trip.expenses.forEach(exp => {
+    trip.expenses.forEach((exp) => {
       const category = exp.category.toLowerCase();
       categories[category] = (categories[category] || 0) + exp.estimated_cost;
     });
@@ -456,7 +474,7 @@ router.get('/:id/summary', async (req, res, next) => {
       total_cost,
       categories,
       avg_per_day: Math.round(avg_per_day * 100) / 100,
-      days
+      days,
     });
   } catch (error) {
     next(error);
@@ -472,56 +490,60 @@ router.post('/:tripId/stops', validate(schemas.createStop), async (req, res, nex
     const trip = await prisma.trip.findFirst({
       where: {
         trip_id: tripId,
-        user_id: req.user.userId
-      }
+        user_id: req.user.userId,
+      },
     });
 
     if (!trip) {
       return res.status(404).json({ message: 'Trip not found' });
     }
 
-    // Verify city exists
-    const city = await prisma.city.findUnique({
-      where: { city_id: req.body.city_id }
-    });
+    // If city_id provided, verify city exists
+    if (req.body.city_id) {
+      const city = await prisma.city.findUnique({
+        where: { city_id: req.body.city_id },
+      });
 
-    if (!city) {
-      return res.status(404).json({ message: 'City not found' });
+      if (!city) {
+        return res.status(404).json({ message: 'City not found' });
+      }
     }
 
-    const { city_id, start_date, end_date, order_index } = req.body;
+    const { city_id, stopping_place, start_date, end_date, order_index } = req.body;
 
     const stop = await prisma.tripStop.create({
       data: {
         trip_id: tripId,
-        city_id,
+        city_id: city_id || null,
+        stopping_place: stopping_place || null,
         start_date: new Date(start_date),
         end_date: new Date(end_date),
-        order_index: order_index ?? 0
+        order_index: order_index ?? 0,
       },
       include: {
         city: true,
         activities: {
           include: {
-            activity: true
-          }
-        }
-      }
+            activity: true,
+          },
+        },
+      },
     });
 
     res.status(201).json({
       stop_id: stop.stop_id,
       city: stop.city,
+      stopping_place: stop.stopping_place,
       start_date: stop.start_date.toISOString().split('T')[0],
       end_date: stop.end_date.toISOString().split('T')[0],
       order_index: stop.order_index,
-      activities: stop.activities.map(ta => ({
+      activities: stop.activities.map((ta) => ({
         trip_activity_id: ta.trip_activity_id,
         activity_id: ta.activity_id,
         name: ta.activity.name,
         scheduled_date: ta.scheduled_date.toISOString().split('T')[0],
-        custom_cost: ta.custom_cost
-      }))
+        custom_cost: ta.custom_cost,
+      })),
     });
   } catch (error) {
     next(error);
@@ -537,8 +559,8 @@ router.patch('/:tripId/stops/:stopId', validate(schemas.updateStop), async (req,
     const trip = await prisma.trip.findFirst({
       where: {
         trip_id: tripId,
-        user_id: req.user.userId
-      }
+        user_id: req.user.userId,
+      },
     });
 
     if (!trip) {
@@ -557,10 +579,10 @@ router.patch('/:tripId/stops/:stopId', validate(schemas.updateStop), async (req,
         city: true,
         activities: {
           include: {
-            activity: true
-          }
-        }
-      }
+            activity: true,
+          },
+        },
+      },
     });
 
     res.json({
@@ -569,13 +591,13 @@ router.patch('/:tripId/stops/:stopId', validate(schemas.updateStop), async (req,
       start_date: stop.start_date.toISOString().split('T')[0],
       end_date: stop.end_date.toISOString().split('T')[0],
       order_index: stop.order_index,
-      activities: stop.activities.map(ta => ({
+      activities: stop.activities.map((ta) => ({
         trip_activity_id: ta.trip_activity_id,
         activity_id: ta.activity_id,
         name: ta.activity.name,
         scheduled_date: ta.scheduled_date.toISOString().split('T')[0],
-        custom_cost: ta.custom_cost
-      }))
+        custom_cost: ta.custom_cost,
+      })),
     });
   } catch (error) {
     next(error);
@@ -591,8 +613,8 @@ router.delete('/:tripId/stops/:stopId', async (req, res, next) => {
     const trip = await prisma.trip.findFirst({
       where: {
         trip_id: tripId,
-        user_id: req.user.userId
-      }
+        user_id: req.user.userId,
+      },
     });
 
     if (!trip) {
@@ -600,7 +622,7 @@ router.delete('/:tripId/stops/:stopId', async (req, res, next) => {
     }
 
     await prisma.tripStop.delete({
-      where: { stop_id: stopId }
+      where: { stop_id: stopId },
     });
 
     res.status(200).send();
@@ -610,126 +632,134 @@ router.delete('/:tripId/stops/:stopId', async (req, res, next) => {
 });
 
 // POST /trips/:tripId/stops/:stopId/activities
-router.post('/:tripId/stops/:stopId/activities', validate(schemas.addActivity), async (req, res, next) => {
-  try {
-    const { tripId, stopId } = req.params;
+router.post(
+  '/:tripId/stops/:stopId/activities',
+  validate(schemas.addActivity),
+  async (req, res, next) => {
+    try {
+      const { tripId, stopId } = req.params;
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: {
-        trip_id: tripId,
-        user_id: req.user.userId
+      // Verify trip belongs to user
+      const trip = await prisma.trip.findFirst({
+        where: {
+          trip_id: tripId,
+          user_id: req.user.userId,
+        },
+      });
+
+      if (!trip) {
+        return res.status(404).json({ message: 'Trip not found' });
       }
-    });
 
-    if (!trip) {
-      return res.status(404).json({ message: 'Trip not found' });
-    }
+      // Verify stop belongs to trip
+      const stop = await prisma.tripStop.findFirst({
+        where: {
+          stop_id: stopId,
+          trip_id: tripId,
+        },
+      });
 
-    // Verify stop belongs to trip
-    const stop = await prisma.tripStop.findFirst({
-      where: {
-        stop_id: stopId,
-        trip_id: tripId
+      if (!stop) {
+        return res.status(404).json({ message: 'Stop not found' });
       }
-    });
 
-    if (!stop) {
-      return res.status(404).json({ message: 'Stop not found' });
-    }
+      // Verify activity exists
+      const activity = await prisma.activity.findUnique({
+        where: { activity_id: req.body.activity_id },
+      });
 
-    // Verify activity exists
-    const activity = await prisma.activity.findUnique({
-      where: { activity_id: req.body.activity_id }
-    });
-
-    if (!activity) {
-      return res.status(404).json({ message: 'Activity not found' });
-    }
-
-    const { activity_id, scheduled_date } = req.body;
-
-    const tripActivity = await prisma.tripActivity.create({
-      data: {
-        stop_id: stopId,
-        activity_id,
-        scheduled_date: scheduled_date ? new Date(scheduled_date) : stop.start_date
-      },
-      include: {
-        activity: true
+      if (!activity) {
+        return res.status(404).json({ message: 'Activity not found' });
       }
-    });
 
-    res.status(201).json({
-      trip_activity_id: tripActivity.trip_activity_id,
-      activity_id: tripActivity.activity_id,
-      name: tripActivity.activity.name,
-      scheduled_date: tripActivity.scheduled_date.toISOString().split('T')[0],
-      custom_cost: tripActivity.custom_cost
-    });
-  } catch (error) {
-    next(error);
+      const { activity_id, scheduled_date } = req.body;
+
+      const tripActivity = await prisma.tripActivity.create({
+        data: {
+          stop_id: stopId,
+          activity_id,
+          scheduled_date: scheduled_date ? new Date(scheduled_date) : stop.start_date,
+        },
+        include: {
+          activity: true,
+        },
+      });
+
+      res.status(201).json({
+        trip_activity_id: tripActivity.trip_activity_id,
+        activity_id: tripActivity.activity_id,
+        name: tripActivity.activity.name,
+        scheduled_date: tripActivity.scheduled_date.toISOString().split('T')[0],
+        custom_cost: tripActivity.custom_cost,
+      });
+    } catch (error) {
+      next(error);
+    }
   }
-});
+);
 
 // PATCH /trips/:tripId/activities/:activityId
-router.patch('/:tripId/activities/:activityId', validate(schemas.updateActivity), async (req, res, next) => {
-  try {
-    const { tripId, activityId } = req.params;
+router.patch(
+  '/:tripId/activities/:activityId',
+  validate(schemas.updateActivity),
+  async (req, res, next) => {
+    try {
+      const { tripId, activityId } = req.params;
 
-    // Verify trip belongs to user
-    const trip = await prisma.trip.findFirst({
-      where: {
-        trip_id: tripId,
-        user_id: req.user.userId
+      // Verify trip belongs to user
+      const trip = await prisma.trip.findFirst({
+        where: {
+          trip_id: tripId,
+          user_id: req.user.userId,
+        },
+      });
+
+      if (!trip) {
+        return res.status(404).json({ message: 'Trip not found' });
       }
-    });
 
-    if (!trip) {
-      return res.status(404).json({ message: 'Trip not found' });
+      // Verify activity belongs to trip
+      const tripActivity = await prisma.tripActivity.findFirst({
+        where: {
+          trip_activity_id: activityId,
+          stop: {
+            trip_id: tripId,
+          },
+        },
+        include: {
+          stop: true,
+        },
+      });
+
+      if (!tripActivity) {
+        return res.status(404).json({ message: 'Activity not found in this trip' });
+      }
+
+      const updateData = {};
+      if (req.body.custom_cost !== undefined) updateData.custom_cost = req.body.custom_cost;
+      if (req.body.scheduled_date) updateData.scheduled_date = new Date(req.body.scheduled_date);
+      if (req.body.notes !== undefined) updateData.notes = req.body.notes;
+
+      const updated = await prisma.tripActivity.update({
+        where: { trip_activity_id: activityId },
+        data: updateData,
+        include: {
+          activity: true,
+        },
+      });
+
+      res.json({
+        trip_activity_id: updated.trip_activity_id,
+        activity_id: updated.activity_id,
+        name: updated.activity.name,
+        scheduled_date: updated.scheduled_date.toISOString().split('T')[0],
+        custom_cost: updated.custom_cost,
+      });
+    } catch (error) {
+      next(error);
     }
-
-    // Verify activity belongs to trip
-    const tripActivity = await prisma.tripActivity.findFirst({
-      where: {
-        trip_activity_id: activityId,
-        stop: {
-          trip_id: tripId
-        }
-      },
-      include: {
-        stop: true
-      }
-    });
-
-    if (!tripActivity) {
-      return res.status(404).json({ message: 'Activity not found in this trip' });
-    }
-
-    const updateData = {};
-    if (req.body.custom_cost !== undefined) updateData.custom_cost = req.body.custom_cost;
-    if (req.body.scheduled_date) updateData.scheduled_date = new Date(req.body.scheduled_date);
-    if (req.body.notes !== undefined) updateData.notes = req.body.notes;
-
-    const updated = await prisma.tripActivity.update({
-      where: { trip_activity_id: activityId },
-      data: updateData,
-      include: {
-        activity: true
-      }
-    });
-
-    res.json({
-      trip_activity_id: updated.trip_activity_id,
-      activity_id: updated.activity_id,
-      name: updated.activity.name,
-      scheduled_date: updated.scheduled_date.toISOString().split('T')[0],
-      custom_cost: updated.custom_cost
-    });
-  } catch (error) {
-    next(error);
   }
-});
+);
 
 // DELETE /trips/:tripId/activities/:activityId
 router.delete('/:tripId/activities/:activityId', async (req, res, next) => {
@@ -740,8 +770,8 @@ router.delete('/:tripId/activities/:activityId', async (req, res, next) => {
     const trip = await prisma.trip.findFirst({
       where: {
         trip_id: tripId,
-        user_id: req.user.userId
-      }
+        user_id: req.user.userId,
+      },
     });
 
     if (!trip) {
@@ -753,12 +783,12 @@ router.delete('/:tripId/activities/:activityId', async (req, res, next) => {
       where: {
         trip_activity_id: activityId,
         stop: {
-          trip_id: tripId
-        }
+          trip_id: tripId,
+        },
       },
       include: {
-        stop: true
-      }
+        stop: true,
+      },
     });
 
     if (!tripActivity) {
@@ -766,7 +796,7 @@ router.delete('/:tripId/activities/:activityId', async (req, res, next) => {
     }
 
     await prisma.tripActivity.delete({
-      where: { trip_activity_id: activityId }
+      where: { trip_activity_id: activityId },
     });
 
     res.status(200).send();
@@ -776,4 +806,3 @@ router.delete('/:tripId/activities/:activityId', async (req, res, next) => {
 });
 
 export default router;
-
